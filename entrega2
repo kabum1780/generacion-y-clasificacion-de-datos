@@ -1,0 +1,153 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
+package generaciónyclasificacióndedatos;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Random;
+
+/**
+ *
+ * @author julio carrasquilla
+ * @author brayan alvarez maecha
+ * @author jennifer montoya perez
+ * @author daniel tamayo rodriguez
+ * package proyecto;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Random;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.File;
+
+/**
+ * La clase GenerateInfoFiles se encarga de generar archivos de datos necesarios para simular
+ * la información de ventas y de vendedores. Esto incluye archivos de productos, información
+ * de vendedores y archivos de ventas para cada vendedor.
+ */
+public class GenerateInfoFiles {
+    // Arreglos de nombres y apellidos para generar información de vendedores
+    private static final String[] nombres = {"Juan", "Maria", "Pedro", "Luis", "Ana", "Carolina", "Carlos", "Daniela"};
+    private static final String[] apellidos = {"Perez", "Gonzalez", "Rodríguez", "Lopez", "Martinez", "Garcia", "Castro"};
+
+    // Arreglos de productos y precios para generar la lista de productos disponibles
+    private static final String[] productos = {"Arroz", "Aceite", "Azucar", "Sal", "Cafe", "Leche", "Pan", "Huevos"};
+    private static final double[] precios = {3500, 15000, 5000, 1200, 12000, 4000, 2500, 800};
+
+    /**
+     * Método principal que genera los archivos necesarios para la simulación.
+     * 
+     * @param args Argumentos de la línea de comandos: 
+     *             - args[0] (opcional): Número de vendedores a generar.
+     *             - args[1] (opcional): Número de ventas por vendedor a generar.
+     */
+    public static void main(String[] args) {
+        int numVendedores = args.length > 0 ? Integer.parseInt(args[0]) : 3;  // Por defecto 3 vendedores
+        int numVentas = args.length > 1 ? Integer.parseInt(args[1]) : 5;      // Por defecto 5 ventas por vendedor
+
+        try {
+            createDirectories();                    // Crear las carpetas necesarias
+            createProductsFile(productos.length);   // Crear archivo de productos
+            createSalesManInfoFile(numVendedores);  // Crear archivo de información de vendedores
+            generateSalesFiles(numVentas);          // Generar archivos de ventas para todos los vendedores
+            System.out.println("Archivos generados correctamente.");
+        } catch (IOException e) {
+            System.out.println("Ocurrió un error al generar los archivos.");
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Genera los archivos de ventas para todos los vendedores listados en el archivo
+     * "info_vendedores.txt".
+     * 
+     * @param numVentas Número de ventas aleatorias a generar por vendedor.
+     * @throws IOException Si ocurre un error al leer o escribir archivos.
+     */
+    public static void generateSalesFiles(int numVentas) throws IOException {
+        // Leer los IDs de los vendedores desde el archivo "vendedores/info_vendedores.txt"
+        BufferedReader reader = new BufferedReader(new FileReader("vendedores/info_vendedores.txt"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] vendorInfo = line.split(";");
+            long id = Long.parseLong(vendorInfo[1]);
+            createSalesMenFile(numVentas, "Vendedor", id);  // Generar archivo de ventas para cada vendedor
+        }
+        
+        reader.close();
+    }
+
+    /**
+     * Genera un archivo de ventas para un vendedor específico.
+     * 
+     * @param randomSalesCount Número de ventas aleatorias a generar.
+     * @param name Nombre del vendedor (no se utiliza en este caso).
+     * @param id ID del vendedor.
+     * @throws IOException Si ocurre un error al escribir el archivo.
+     */
+    public static void createSalesMenFile(int randomSalesCount, String name, long id) throws IOException {
+        FileWriter writer = new FileWriter("ventas/ventas_" + id + ".txt");
+        Random rand = new Random();
+        writer.write("CC;" + id + "\n"); // Escribir datos del vendedor
+        for (int i = 0; i < randomSalesCount; i++) {
+            int productId = rand.nextInt(productos.length);  // ID de producto aleatorio
+            int quantitySold = rand.nextInt(50) + 1;  // Cantidad vendida aleatoria
+            writer.write(productId + ";" + quantitySold + ";\n");
+        }
+        writer.close();
+    }
+
+    /**
+     * Genera un archivo de productos disponibles con sus precios.
+     * 
+     * @param productsCount Número de productos a generar (debe ser igual al tamaño del arreglo de productos).
+     * @throws IOException Si ocurre un error al escribir el archivo.
+     */
+    public static void createProductsFile(int productsCount) throws IOException {
+        try (FileWriter writer = new FileWriter("productos/productos.txt")) {
+            for (int i = 0; i < productsCount; i++) {
+                writer.write(i + ";" + productos[i] + ";" + precios[i] + ";\n");
+            }
+        }
+    }
+
+    /**
+     * Genera un archivo de información de vendedores con sus nombres y números de cédula.
+     * 
+     * @param salesmanCount Número de vendedores a generar.
+     * @throws IOException Si ocurre un error al escribir el archivo.
+     */
+    public static void createSalesManInfoFile(int salesmanCount) throws IOException {
+        FileWriter writer = new FileWriter("vendedores/info_vendedores.txt");
+        Random rand = new Random();
+        for (int i = 0; i < salesmanCount; i++) {
+            String docType = "CC";  // Tipo de documento (Cédula de Ciudadanía)
+            long docNumber = 10000000 + rand.nextInt(90000000);  // Número de cédula aleatorio
+            String firstName = nombres[rand.nextInt(nombres.length)];
+            String lastName = apellidos[rand.nextInt(apellidos.length)];
+            writer.write(docType + ";" + docNumber + ";" + firstName + ";" + lastName + "\n");
+        }
+        writer.close();
+    }
+
+    /**
+     * Crea las carpetas necesarias para almacenar los archivos de productos, vendedores y ventas.
+     * 
+     * @throws IOException Si ocurre un error al crear las carpetas.
+     */
+    public static void createDirectories() throws IOException {
+        File productosDir = new File("productos");
+        File vendedoresDir = new File("vendedores");
+        File ventasDir = new File("ventas");
+
+        if (!productosDir.exists()) productosDir.mkdirs();
+        if (!vendedoresDir.exists()) vendedoresDir.mkdirs();
+        if (!ventasDir.exists()) ventasDir.mkdirs();
+    }
+}
